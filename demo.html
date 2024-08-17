@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' 'unsafe-inline' https://fonts.gstatic.com; img-src 'self' data: blob: https://pfst.cf2.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com; media-src 'self' data: blob: https://pfst.cf2.poecdn.net https://i.imgur.com https://wikimedia.org; frame-src 'self' https://www.youtube.com; upgrade-insecure-requests; block-all-mixed-content;"
+    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LoveSick GPT</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f2f5;
+        color: #333;
+      }
+      .app-container {
+        display: flex;
+        min-height: 100vh;
+        transition: all 0.3s ease;
+      }
+      .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        padding: 20px;
+        transition: all 0.3s ease;
+        overflow-y: auto;
+      }
+      .sidebar.hidden {
+        margin-left: -250px;
+      }
+      .sidebar h2 {
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+      .user-profile {
+        text-align: center;
+        margin-bottom: 30px;
+        cursor: pointer;
+      }
+      .user-profile img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+      }
+      .nav-links {
+        list-style-type: none;
+        padding: 0;
+      }
+      .nav-links li {
+        margin-bottom: 15px;
+      }
+      .nav-links a {
+        color: #ecf0f1;
+        text-decoration: none;
+        font-size: 1.1em;
+      }
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: #3498db;
+      }
+      .main-content {
+        flex-grow: 1;
+        padding: 30px;
+        transition: all 0.3s ease;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+      h1,
+      h2 {
+        color: #2c3e50;
+      }
+      .profile-list {
+        margin-bottom: 30px;
+      }
+      .profile-row {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      .profile-row:hover {
+        background-color: #f5f7fa;
+      }
+      .profile-row img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin-right: 20px;
+        object-fit: cover;
+      }
+      .profile-info {
+        flex-grow: 1;
+      }
+      .score {
+        font-weight: bold;
+        color: #3498db;
+        font-size: 1.2em;
+      }
+      .articles {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 25px;
+      }
+      .article {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        background-color: #fff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .article:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      .article h3 {
+        margin-top: 0;
+        color: #2c3e50;
+      }
+      .article a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .article a:hover {
+        text-decoration: underline;
+      }
+      .upload-btn {
+        background-color: #3498db;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 20px 0;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+      .upload-btn:hover {
+        background-color: #2980b9;
+      }
+      #profileAnalysis {
+        display: none;
+      }
+      .analysis-item {
+        margin-bottom: 25px;
+      }
+      .analysis-item h4 {
+        margin-bottom: 10px;
+        color: #2c3e50;
+      }
+      .progress-bar {
+        width: 100%;
+        background-color: #e0e0e0;
+        padding: 3px;
+        border-radius: 5px;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .progress-bar-fill {
+        display: block;
+        height: 25px;
+        background-color: #3498db;
+        border-radius: 3px;
+        transition: width 500ms ease-in-out;
+      }
+      .recommendation {
+        background-color: #e8f4fd;
+        border-left: 5px solid #3498db;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 5px;
+      }
+      .decision {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        text-align: center;
+      }
+      .decision.positive {
+        background-color: #27ae60;
+        color: white;
+      }
+      .decision.negative {
+        background-color: #e74c3c;
+        color: white;
+      }
+      .back-btn {
+        background-color: #7f8c8d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      .back-btn:hover {
+        background-color: #95a5a6;
+      }
+      .tab-container {
+        margin-bottom: 20px;
+      }
+      .tab {
+        display: inline-block;
+        padding: 10px 20px;
+        cursor: pointer;
+        background-color: #ecf0f1;
+        border-radius: 5px 5px 0 0;
+      }
+      .tab.active {
+        background-color: #3498db;
+        color: white;
+      }
+      .tab-content {
+        display: none;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 0 0 5px 5px;
+        border: 1px solid #ecf0f1;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .post {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      .post-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .post-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+      .post-actions {
+        margin-top: 10px;
+      }
+      .post-actions button {
+        background-color: #ecf0f1;
+        border: none;
+        padding: 5px 10px;
+        margin-right: 10px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .new-post textarea {
+        width: 100%;
+        height: 100px;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        resize: vertical;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar" id="sidebar">
+        <div class="user-profile" onclick="toggleSidebar()">
+          <img src="https://via.placeholder.com/100" alt="Your Profile" />
+          <h3>Your Name</h3>
+        </div>
+        <nav>
+          <ul class="nav-links">
+            <li>
+              <a href="#" class="active" onclick="showTab('dashboard')"
+                >Dashboard</a
+              >
+            </li>
+            <li><a href="#" onclick="showTab('community')">Community</a></li>
+            <li><a href="#">Messages</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Settings</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <h1>Love Sick GPT</h1>
+        <div class="container">
+          <section id="mainDashboard">
+            <div class="tab-container">
+              <div class="tab active" onclick="showTab('dashboard')">
+                Dashboard
+              </div>
+              <div class="tab" onclick="showTab('community')">Community</div>
+            </div>
+
+            <div id="dashboardContent" class="tab-content active">
+              <h1>Relationship Dashboard</h1>
+
+              <section class="profile-list">
+                <h2>Your Connections</h2>
+                <div class="profile-row" onclick="showAnalysis('Alice')">
+                  <img src="https://via.placeholder.com/60" alt="Alice" />
+                  <div class="profile-info">
+                    <h3>Alice</h3>
+                    <p>Last message: Hey, want to grab coffee?</p>
+                  </div>
+                  <div class="score">75%</div>
+                </div>
+                <div class="profile-row" onclick="showAnalysis('Bob')">
+                  <img src="https://via.placeholder.com/60" alt="Bob" />
+                  <div class="profile-info">
+                    <h3>Bob</h3>
+                    <p>Last message: Thanks for your help!</p>
+                  </div>
+                  <div class="score">45%</div>
+                </div>
+                <div class="profile-row" onclick="showAnalysis('Charlie')">
+                  <img src="https://via.placeholder.com/60" alt="Charlie" />
+                  <div class="profile-info">
+                    <h3>Charlie</h3>
+                    <p>Last message: Movie night was fun!</p>
+                  </div>
+                  <div class="score">60%</div>
+                </div>
+              </section>
+
+              <button
+                class="upload-btn"
+                onclick="alert('Upload functionality would be implemented here.')"
+              >
+                Upload Chat/Video
+              </button>
+
+              <section class="recommended-articles">
+                <h2>Recommended Articles</h2>
+                <div class="articles">
+                  <div class="article">
+                    <h3>Effective Communication in Relationships</h3>
+                    <p>Learn how to improve your communication skills...</p>
+                    <a href="#">Read more</a>
+                  </div>
+                  <div class="article">
+                    <h3>Building Trust and Intimacy</h3>
+                    <p>Discover ways to deepen your connections...</p>
+                    <a href="#">Read more</a>
+                  </div>
+                  <div class="article">
+                    <h3>Navigating Conflict in Relationships</h3>
+                    <p>Tips for handling disagreements in a healthy way...</p>
+                    <a href="#">Read more</a>
+                  </div>
+                  <div class="article">
+                    <h3>Understanding Attachment Styles</h3>
+                    <p>
+                      Learn about different attachment styles and how they
+                      affect relationships...
+                    </p>
+                    <a href="#">Read more</a>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div id="communityContent" class="tab-content">
+              <h1>Community</h1>
+              <div class="new-post">
+                <textarea placeholder="Share your thoughts..."></textarea>
+                <button
+                  class="upload-btn"
+                  onclick="alert('Post functionality would be implemented here.')"
+                >
+                  Post
+                </button>
+              </div>
+              <div class="posts">
+                <div class="post">
+                  <div class="post-header">
+                    <img src="https://via.placeholder.com/40" alt="User" />
+                    <h3>John Doe</h3>
+                  </div>
+                  <p>
+                    Just had a great conversation with my partner about our
+                    future goals. Communication is key!
+                  </p>
+                  <div class="post-actions">
+                    <button
+                      onclick="alert('Like functionality would be implemented here.')"
+                    >
+                      Like
+                    </button>
+                    <button
+                      onclick="alert('Comment functionality would be implemented here.')"
+                    >
+                      Comment
+                    </button>
+                  </div>
+                </div>
+                <div class="post">
+                  <div class="post-header">
+                    <img src="https://via.placeholder.com/40" alt="User" />
+                    <h3>Jane Smith</h3>
+                  </div>
+                  <p>
+                    Looking for advice on how to maintain a long-distance
+                    relationship. Any tips?
+                  </p>
+                  <div class="post-actions">
+                    <button
+                      onclick="alert('Like functionality would be implemented here.')"
+                    >
+                      Like
+                    </button>
+                    <button
+                      onclick="alert('Comment functionality would be implemented here.')"
+                    >
+                      Comment
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="profileAnalysis" style="display: none">
+            <button class="back-btn" onclick="showMainDashboard()">
+              Back to Dashboard
+            </button>
+            <h2 id="analysisTitle">Chat Analysis</h2>
+            <div id="analysisContent"></div>
+            <div class="recommendation">
+              <h3>Recommended Reply:</h3>
+              <p id="recommendedReply"></p>
+            </div>
+            <div id="decision" class="decision"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      function showAnalysis(name) {
+        const mainDashboard = document.getElementById("mainDashboard");
+        const profileAnalysis = document.getElementById("profileAnalysis");
+        const title = document.getElementById("analysisTitle");
+        const content = document.getElementById("analysisContent");
+        const recommendedReply = document.getElementById("recommendedReply");
+        const decision = document.getElementById("decision");
+
+        mainDashboard.style.display = "none";
+        profileAnalysis.style.display = "block";
+
+        title.textContent = `Chat Analysis: ${name}`;
+
+        // Mock data for analysis
+        const analysisData = {
+          Alice: {
+            metrics: [
+              { name: "Emotional Engagement", score: 80 },
+              { name: "Conversation Frequency", score: 75 },
+              { name: "Shared Interests", score: 70 },
+              { name: "Response Time", score: 85 },
+            ],
+            recommendedReply:
+              "Hey Alice! I'd love to grab coffee. How about tomorrow afternoon at our usual spot?",
+            keepTalking: true,
+          },
+          Bob: {
+            metrics: [
+              { name: "Emotional Engagement", score: 50 },
+              { name: "Conversation Frequency", score: 40 },
+              { name: "Shared Interests", score: 60 },
+              { name: "Response Time", score: 30 },
+            ],
+            recommendedReply:
+              "Hi Bob, you're welcome! Let me know if you need any more assistance.",
+            keepTalking: false,
+          },
+          Charlie: {
+            metrics: [
+              { name: "Emotional Engagement", score: 65 },
+              { name: "Conversation Frequency", score: 70 },
+              { name: "Shared Interests", score: 80 },
+              { name: "Response Time", score: 55 },
+            ],
+            recommendedReply:
+              "Glad you enjoyed the movie night, Charlie! We should plan another one soon. Any film suggestions?",
+            keepTalking: true,
+          },
+        };
+
+        content.innerHTML = "";
+        analysisData[name].metrics.forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "analysis-item";
+          div.innerHTML = `
+                    <h4>${item.name}</h4>
+                    <div class="progress-bar">
+                        <span class="progress-bar-fill" style="width: ${item.score}%;"></span>
+                    </div>
+                    <p>${item.score}%</p>
+                `;
+          content.appendChild(div);
+        });
+
+        recommendedReply.textContent = analysisData[name].recommendedReply;
+
+        decision.textContent = analysisData[name].keepTalking
+          ? "Recommendation: Continue engaging with this person"
+          : "Recommendation: Consider reducing engagement with this person";
+        decision.className = analysisData[name].keepTalking
+          ? "decision positive"
+          : "decision negative";
+      }
+
+      function showMainDashboard() {
+        document.getElementById("mainDashboard").style.display = "block";
+        document.getElementById("profileAnalysis").style.display = "none";
+      }
+
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("hidden");
+      }
+
+      function showTab(tabName) {
+        const tabs = document.querySelectorAll(".tab");
+        const tabContents = document.querySelectorAll(".tab-content");
+
+        tabs.forEach((tab) => tab.classList.remove("active"));
+        tabContents.forEach((content) => content.classList.remove("active"));
+
+        document
+          .querySelector(`.tab[onclick="showTab('${tabName}')"]`)
+          .classList.add("active");
+        document.getElementById(`${tabName}Content`).classList.add("active");
+      }
+    </script>
+  </body>
+</html>
