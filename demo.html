@@ -279,14 +279,44 @@
         border-radius: 5px;
         resize: vertical;
       }
+      .chat-history {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 20px;
+      }
+
+      .chat-message {
+        margin-bottom: 10px;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+
+      .chat-message.sent {
+        background-color: #e8f4fd;
+        margin-left: 20px;
+      }
+
+      .chat-message.received {
+        background-color: #f0f0f0;
+        margin-right: 20px;
+      }
+
+      .chat-message .timestamp {
+        font-size: 0.8em;
+        color: #888;
+        margin-top: 2px;
+      }
     </style>
   </head>
   <body>
     <div class="app-container">
       <aside class="sidebar" id="sidebar">
         <div class="user-profile" onclick="toggleSidebar()">
-          <img src="https://via.placeholder.com/100" alt="Your Profile" />
-          <h3>Your Name</h3>
+          <img src="./user1.jpeg" alt="Your Profile" />
+          <h3>LoveSick111</h3>
         </div>
         <nav>
           <ul class="nav-links">
@@ -318,9 +348,9 @@
               <h1>Relationship Dashboard</h1>
 
               <section class="profile-list">
-                <h2>Your Connections</h2>
+                <h3>Chat Analysis</h3>
                 <div class="profile-row" onclick="showAnalysis('Alice')">
-                  <img src="https://via.placeholder.com/60" alt="Alice" />
+                  <img src="./alice.jpeg" alt="Alice" />
                   <div class="profile-info">
                     <h3>Alice</h3>
                     <p>Last message: Hey, want to grab coffee?</p>
@@ -328,15 +358,15 @@
                   <div class="score">75%</div>
                 </div>
                 <div class="profile-row" onclick="showAnalysis('Bob')">
-                  <img src="https://via.placeholder.com/60" alt="Bob" />
+                  <img src="./bob.jpeg" alt="Bob" />
                   <div class="profile-info">
                     <h3>Bob</h3>
-                    <p>Last message: Thanks for your help!</p>
+                    <p>Last message: LOL!</p>
                   </div>
                   <div class="score">45%</div>
                 </div>
                 <div class="profile-row" onclick="showAnalysis('Charlie')">
-                  <img src="https://via.placeholder.com/60" alt="Charlie" />
+                  <img src="./charlie.jpeg" alt="Charlie" />
                   <div class="profile-info">
                     <h3>Charlie</h3>
                     <p>Last message: Movie night was fun!</p>
@@ -396,7 +426,7 @@
               <div class="posts">
                 <div class="post">
                   <div class="post-header">
-                    <img src="https://via.placeholder.com/40" alt="User" />
+                    <img src="./user2.jpeg" alt="User" />
                     <h3>John Doe</h3>
                   </div>
                   <p>
@@ -418,7 +448,7 @@
                 </div>
                 <div class="post">
                   <div class="post-header">
-                    <img src="https://via.placeholder.com/40" alt="User" />
+                    <img src="./user3.jpeg" alt="User" />
                     <h3>Jane Smith</h3>
                   </div>
                   <p>
@@ -447,6 +477,7 @@
               Back to Dashboard
             </button>
             <h2 id="analysisTitle">Chat Analysis</h2>
+            <div class="chat-history" id="chatHistory"></div>
             <div id="analysisContent"></div>
             <div class="recommendation">
               <h3>Recommended Reply:</h3>
@@ -466,6 +497,7 @@
         const content = document.getElementById("analysisContent");
         const recommendedReply = document.getElementById("recommendedReply");
         const decision = document.getElementById("decision");
+        const chatHistory = document.getElementById("chatHistory");
 
         mainDashboard.style.display = "none";
         profileAnalysis.style.display = "block";
@@ -484,6 +516,23 @@
             recommendedReply:
               "Hey Alice! I'd love to grab coffee. How about tomorrow afternoon at our usual spot?",
             keepTalking: true,
+            chatHistory: [
+              {
+                sender: "Alice",
+                message: "Hey, how's it going?",
+                timestamp: "2023-08-17 10:30",
+              },
+              {
+                sender: "You",
+                message: "Hi Alice! I'm doing well, thanks. How about you?",
+                timestamp: "2023-08-17 10:35",
+              },
+              {
+                sender: "Alice",
+                message: "I'm good too! Hey, want to grab coffee?",
+                timestamp: "2023-08-17 10:40",
+              },
+            ],
           },
           Bob: {
             metrics: [
@@ -495,6 +544,28 @@
             recommendedReply:
               "Hi Bob, you're welcome! Let me know if you need any more assistance.",
             keepTalking: false,
+            chatHistory: [
+              {
+                sender: "You",
+                message: "Hey Bob, how's the project coming along?",
+                timestamp: "2023-08-16 14:20",
+              },
+              {
+                sender: "Bob",
+                message: "It's going okay. I'm stuck on a few things though.",
+                timestamp: "2023-08-16 15:45",
+              },
+              {
+                sender: "You",
+                message: "Need any help? I'd be happy to assist.",
+                timestamp: "2023-08-16 16:00",
+              },
+              {
+                sender: "Bob",
+                message: "LOL!",
+                timestamp: "2023-08-17 09:30",
+              },
+            ],
           },
           Charlie: {
             metrics: [
@@ -506,20 +577,52 @@
             recommendedReply:
               "Glad you enjoyed the movie night, Charlie! We should plan another one soon. Any film suggestions?",
             keepTalking: true,
+            chatHistory: [
+              {
+                sender: "Charlie",
+                message: "Last night's movie was awesome!",
+                timestamp: "2023-08-17 11:15",
+              },
+              {
+                sender: "You",
+                message: "I know, right? I loved the plot twists!",
+                timestamp: "2023-08-17 11:20",
+              },
+              {
+                sender: "Charlie",
+                message: "Movie night was fun!",
+                timestamp: "2023-08-17 11:25",
+              },
+            ],
           },
         };
 
+        // Display chat history
+        chatHistory.innerHTML = "";
+        analysisData[name].chatHistory.forEach((message) => {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `chat-message ${
+            message.sender === "You" ? "sent" : "received"
+          }`;
+          messageDiv.innerHTML = `
+            <strong>${message.sender}:</strong> ${message.message}
+            <div class="timestamp">${message.timestamp}</div>
+          `;
+          chatHistory.appendChild(messageDiv);
+        });
+
+        // Display metrics
         content.innerHTML = "";
         analysisData[name].metrics.forEach((item) => {
           const div = document.createElement("div");
           div.className = "analysis-item";
           div.innerHTML = `
-                    <h4>${item.name}</h4>
-                    <div class="progress-bar">
-                        <span class="progress-bar-fill" style="width: ${item.score}%;"></span>
-                    </div>
-                    <p>${item.score}%</p>
-                `;
+            <h4>${item.name}</h4>
+            <div class="progress-bar">
+              <span class="progress-bar-fill" style="width: ${item.score}%;"></span>
+            </div>
+            <p>${item.score}%</p>
+          `;
           content.appendChild(div);
         });
 
